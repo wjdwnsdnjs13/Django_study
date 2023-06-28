@@ -1,7 +1,9 @@
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 import random
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
+nextId = 4
 topics = [
     {'id' : 1, 'title' : 'routing', 'body' : 'Routing is ...'},
     {'id' : 2, 'title' : 'view', 'body' : 'View is ...'},
@@ -19,6 +21,9 @@ def HTMLTemplate(articleTag):
         {ol}
     </ol>
     {articleTag}
+    <ul>
+        <a href="/create/">create</a>
+    </ul>
     '''
 
 
@@ -27,9 +32,29 @@ def index(request):
     article = '''<h2>Welcome</h2>
     Hello, Django'''
     return HttpResponse(HTMLTemplate(article))
-
+@csrf_exempt #from django.views.decorators.csrf import csrf_exempt 후 사용하려는 함수에 달아주면 됨.
 def create(request):
-    return HttpResponse('<h1>Create!</h1>')
+    global nextId
+    print("request. : ", request.method)
+    if request.method == "GET":
+        article = '''
+        <form action="/create/" method="POST">
+            <p><input type="text" name="title" placeholder="title"></p>
+            <p><textarea name="body" placeholder="body"></textarea></p>
+            <p><input type="submit"></p>
+            </form>
+        '''
+        return HttpResponse(HTMLTemplate(article))
+    elif request.method == "POST":
+        print(request.POST["title"])
+        title = request.POST["title"]
+        body = request.POST["body"]
+        newTopic = {"id" : nextId, "title" : title, "body" : body}
+        topics.append(newTopic)
+        url = "/read/" + str(nextId)
+        nextId += 1
+        return redirect(url)
+
 
 def read(request, id):
     global topics
