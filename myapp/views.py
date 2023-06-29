@@ -14,7 +14,6 @@ def HTMLTemplate(articleTag, id=None):
     global topics
     contextUI = ''
     if id != None:
-        print("hi")
         contextUI = f'''
             <li>
                 <form action="/delete/" method="post">
