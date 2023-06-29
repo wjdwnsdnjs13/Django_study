@@ -5,13 +5,24 @@ from django.shortcuts import render, redirect
 
 nextId = 4
 topics = [
-    {'id' : 1, 'title' : 'routing', 'body' : 'Routing is ...'},
-    {'id' : 2, 'title' : 'view', 'body' : 'View is ...'},
-    {'id' : 3, 'title' : 'Model', 'body' : 'Model is ...'}
+    {'id': 1, 'title': 'routing', 'body': 'Routing is ...'},
+    {'id': 2, 'title': 'view', 'body': 'View is ...'},
+    {'id': 3, 'title': 'Model', 'body': 'Model is ...'}
 ]
 
-def HTMLTemplate(articleTag):
+def HTMLTemplate(articleTag, id=None):
     global topics
+    contextUI = ''
+    if id != None:
+        print("hi")
+        contextUI = f'''
+            <li>
+                <form action="/delete/" method="post">
+                    <input type="hidden" name="id" value={id}>
+                    <input type="submit" value="delete">
+                </form>
+            </li>
+        '''
     ol = ''
     for topic in topics:
         ol += f'<li><a href="/read/{topic["id"]}">{topic["title"]}</a></li>'
@@ -22,7 +33,8 @@ def HTMLTemplate(articleTag):
     </ol>
     {articleTag}
     <ul>
-        <a href="/create/">create</a>
+        <li><a href="/create/">create</a></li>
+        {contextUI}
     </ul>
     '''
 
@@ -49,12 +61,23 @@ def create(request):
         print(request.POST["title"])
         title = request.POST["title"]
         body = request.POST["body"]
-        newTopic = {"id" : nextId, "title" : title, "body" : body}
+        newTopic = {"id": nextId, "title": title, "body": body}
         topics.append(newTopic)
         url = "/read/" + str(nextId)
         nextId += 1
         return redirect(url)
 
+@csrf_exempt
+def delete(request):
+    global topics
+    if request.method == "POST":
+        id = request.POST['id']
+        newTopics = []
+        for topic in topics:
+            if topic['id'] != int(id):
+                newTopics.append(topic)
+        topics = newTopics
+        return redirect('/')
 
 def read(request, id):
     global topics
@@ -62,4 +85,4 @@ def read(request, id):
     for topic in topics:
         if topic['id'] == int(id):
             article = f'<h2>{topic["title"]}</h2>{topic["body"]}'
-    return HttpResponse(HTMLTemplate(article))
+    return HttpResponse(HTMLTemplate(article, id))
