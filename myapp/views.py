@@ -22,6 +22,7 @@ def HTMLTemplate(articleTag, id=None):
                     <input type="submit" value="delete">
                 </form>
             </li>
+            <li><a href="/update/{id}">update</a></li>
         '''
     ol = ''
     for topic in topics:
@@ -44,6 +45,35 @@ def index(request):
     article = '''<h2>Welcome</h2>
     Hello, Django'''
     return HttpResponse(HTMLTemplate(article))
+
+@csrf_exempt
+def update(request, id):
+    global topics
+    if request.method == "GET":
+        for topic in topics:
+            if topic['id'] == int(id):
+                selectedTopic = {
+                    "title":topic["title"],
+                    "body": topic["body"]
+                }
+        article = f'''
+                <form action="/update/{id}/" method="POST">
+                    <p><input type="text" name="title" placeholder="title" value={selectedTopic["title"]}></p>
+                    <p><textarea name="body" placeholder="body">{selectedTopic["title"]}</textarea></p>
+                    <p><input type="submit"></p>
+                </form>
+                '''
+        return HttpResponse(HTMLTemplate(article, id))
+    elif request.method == "POST":
+        title = request.POST['title']
+        body = request.POST['body']
+        for topic in topics:
+            if topic['id'] == int(id):
+                topic['title'] = title
+                topic['body'] = body
+        return redirect(f'/read/{id}')
+
+
 @csrf_exempt #from django.views.decorators.csrf import csrf_exempt 후 사용하려는 함수에 달아주면 됨.
 def create(request):
     global nextId
