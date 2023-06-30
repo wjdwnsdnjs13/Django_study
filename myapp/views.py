@@ -45,6 +45,14 @@ def index(request):
     Hello, Django'''
     return HttpResponse(HTMLTemplate(article))
 
+def read(request, id):
+    global topics
+    article = ''
+    for topic in topics:
+        if topic['id'] == int(id):
+            article = f'<h2>{topic["title"]}</h2>{topic["body"]}'
+    return HttpResponse(HTMLTemplate(article, id))
+
 @csrf_exempt
 def update(request, id):
     global topics
@@ -107,11 +115,3 @@ def delete(request):
                 newTopics.append(topic)
         topics = newTopics
         return redirect('/')
-
-def read(request, id):
-    global topics
-    article = ''
-    for topic in topics:
-        if topic['id'] == int(id):
-            article = f'<h2>{topic["title"]}</h2>{topic["body"]}'
-    return HttpResponse(HTMLTemplate(article, id))
